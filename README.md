@@ -24,7 +24,7 @@ The following are examples of requests that you can make to the API:
 #### Request:
 
 ```
-GET http://localhost:5000/
+GET https://vartapratikriya-api.vercel.app/
 ```
 
 #### Response:
@@ -41,7 +41,7 @@ GET http://localhost:5000/
 #### Request:
 
 ```
-GET http://localhost:5000/articles/top
+GET https://vartapratikriya-api.vercel.app/articles/top
 ```
 
 #### Response:
@@ -66,7 +66,7 @@ GET http://localhost:5000/articles/top
 #### Request:
 
 ```
-GET http://localhost:5000/articles/headlines
+GET https://vartapratikriya-api.vercel.app/articles/headlines
 ```
 
 #### Response:
@@ -84,7 +84,7 @@ GET http://localhost:5000/articles/headlines
 - To get the articles in the specified category, you can make a GET request to the `/articles/categories` endpoint and specify the category in the `category` query parameter.
 
 ```
-GET http://localhost:5000/articles/categories?category=business
+GET https://vartapratikriya-api.vercel.app/articles/categories?category=business
 ```
 
 #### Response:

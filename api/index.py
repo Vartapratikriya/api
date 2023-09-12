@@ -33,7 +33,7 @@ def headlines():
 @app.route("/articles/categories")
 def categories():
     args = request.args
-    with open("public/data/dump_categories.json") as f:
+    with open("public/data/dump_categorised.json") as f:
         dump = json.load(f)
     keyword = args["category"]
     if keyword == "all":

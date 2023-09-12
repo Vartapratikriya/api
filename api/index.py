@@ -10,7 +10,7 @@ app = Flask(__name__)
 def root():
     return jsonify(
         {
-            "vartapratikriya": "v0.1.0",
+            "vartapratikriya": "v0.1.1",
             "status": "ok",
         }
     )

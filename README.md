@@ -9,9 +9,9 @@ The API has the following endpoints:
 - `/`
   - This endpoint returns the version of the API and the status of the server.
 - `/articles/top`
-  - This endpoint returns the top articles in the data set.
+  - This endpoint returns the top keywords from the last scraped articles.
 - `/articles/headlines`
-  - This endpoint returns the headlines of the articles in the data set.
+  - This endpoint returns the latest scraped top headlines.
 - `/articles/categories`
   - This endpoint returns the articles in the specified category. The category can be specified by the `category` query parameter.
 
@@ -81,7 +81,16 @@ GET https://vartapratikriya-api.vercel.app/articles/headlines
 
 #### Request:
 
-- To get the articles in the specified category, you can make a GET request to the `/articles/categories` endpoint and specify the category in the `category` query parameter.
+- To get the articles in the specified category, you can make a GET request to the `/articles/categories` endpoint and specify the category in the `category` query parameter. Available categories: [
+  "sports",
+  "healthcare",
+  "business",
+  "media",
+  "laws",
+  "entertainment",
+  "weather",
+  "policy",
+  ]
 
 ```
 GET https://vartapratikriya-api.vercel.app/articles/categories?category=business

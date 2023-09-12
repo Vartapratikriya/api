@@ -3,8 +3,6 @@ import json
 import requests
 import datetime
 
-from dotenv import load_dotenv
-
 from tqdm import tqdm
 from typing import List, Dict
 
@@ -53,12 +51,10 @@ class NewsListener:
                 requests.get(self.url + f"&domains={domain}").json()["articles"]
             )
         return {
-            "news_listener": "v0.1.0",
-            "generated_at": str(datetime.datetime.now()),
             "articles": articles,
         }
 
-    def get_keywords(self) -> Dict:
+    def get_categorised(self) -> Dict:
         print("Getting relevant articles...")
         articles = {}
         for keyword in tqdm(self.keywords):
@@ -67,19 +63,5 @@ class NewsListener:
             ).json()["articles"]
 
         return {
-            "news_listener": "v0.1.0",
-            "scraped_at": str(datetime.datetime.now()),
             "articles": articles,
         }
-
-
-if __name__ == "__main__":
-    load_dotenv()
-    config = load_config("./config.json")
-    nL = NewsListener(key=os.getenv("NEWS_API_KEY"), domains=config["outlets"])
-
-    with open("/data/dump_headlines.json", "w") as json_file:
-        json.dump(nL.get_headlines(), json_file, indent=4, ensure_ascii=False)
-
-    with open("/data/dump_categories.json", "w") as json_file:
-        json.dump(nL.get_keywords(), json_file, indent=4, ensure_ascii=False)

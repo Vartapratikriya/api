@@ -1,99 +1,85 @@
 import os
-import re
 import json
 import requests
 import datetime
 
 from dotenv import load_dotenv
-from bs4 import BeautifulSoup
 
 from tqdm import tqdm
 from typing import List, Dict
 
-import utils
-from extractor import Extractor
+
+def load_config(config_file_path):
+    try:
+        with open(config_file_path, "r") as config_file:
+            config = json.load(config_file)
+        return config
+    except FileNotFoundError:
+        print(f"Config file not found at {config_file_path}")
+        return None
+    except json.JSONDecodeError as e:
+        print(f"Error parsing JSON in {config_file_path}: {e}")
+        return None
 
 
 class NewsListener:
     def __init__(
         self,
         key: str,
-        keywords: List[str] = [
-            "murder",
-            "kill",
-            "burglar",
-            "kidnap",
-            "hit and run",
-            "suspect",
-            "criminal",
-            "victim",
-        ],
-        domains: List[str] = [
-            "indianexpress.com",
-        ],
+        domains: List[str],
     ) -> None:
         self._key = key
-        self.keywords = keywords
         self.domains = domains
+        self.keywords = [
+            "sports",
+            "healthcare",
+            "business",
+            "media",
+            "laws",
+            "entertainment",
+            "weather",
+            "policy",
+        ]
         self.date = datetime.datetime.now().date().strftime("%y-%m-%d")
-        self.url = f"https://newsapi.org/v2/everything?domains={','.join(self.domains)}&from={self.date}&apiKey={self._key}"
+        self.url = (
+            f"https://newsapi.org/v2/everything?from={self.date}&apiKey={self._key}"
+        )
 
-    def get(self) -> Dict:
-        response = requests.get(self.url).json()
-        data = {"date": self.date, "records": []}
-        for article in tqdm(response["articles"]):
-            for keyword in self.keywords:
-                if (
-                    keyword in article["title"]
-                    or keyword in article["description"]
-                    or keyword in article["content"]
-                ):
-                    payload = self.scrape(article["url"])
-                    record = {
-                        "title": article["title"],
-                        "description": payload["description"],
-                        "date": self.date,
-                        "state": "WB",
-                        "type": "unverified",
-                        "suspect": payload["suspect"],
-                        "victim": payload["victim"],
-                        "image": article["urlToImage"],
-                    }
-                    for state, code in utils.state_dict.items():
-                        if state in article["content"].lower():
-                            record["state"] = code
-                    data["records"].append(record)
-        return data
+    def get_headlines(self) -> Dict:
+        print("Getting headlines...")
+        articles = []
+        for domain in tqdm(self.domains):
+            articles.extend(
+                requests.get(self.url + f"&domains={domain}").json()["articles"]
+            )
+        return {
+            "news_listener": "v0.1.0",
+            "generated_at": str(datetime.datetime.now()),
+            "articles": articles,
+        }
 
-    def clean(self, text):
-        special_chars = re.compile(r"[^\w\s]")
-        web_address = re.compile(r"http(s)?://[a-z0-9.~_\-\/]+")
-        unicode = re.compile(r"\\u[0-9a-fA-F]{4}")
+    def get_keywords(self) -> Dict:
+        print("Getting relevant articles...")
+        articles = {}
+        for keyword in tqdm(self.keywords):
+            articles[keyword] = requests.get(
+                self.url + f"&domains={','.join(self.domains)}" + f"&q={keyword}"
+            ).json()["articles"]
 
-        text = re.sub(unicode, " ", text)
-        text = re.sub(web_address, " ", text)
-        text = re.sub(special_chars, " ", text)
-
-        text = text.replace("\n", " ")
-        text = text.replace("\t", " ")
-
-        return text
-
-    def scrape(self, url: str) -> Dict:
-        response = requests.get(url).text
-        soup = BeautifulSoup(response, "html.parser")
-        target = soup.find("div", class_="full-details")
-        children = target.find_all("p")
-        content = " ".join([p.get_text() for p in children])
-        extractor = Extractor()
-        res = extractor(content)
-        return res
+        return {
+            "news_listener": "v0.1.0",
+            "scraped_at": str(datetime.datetime.now()),
+            "articles": articles,
+        }
 
 
 if __name__ == "__main__":
     load_dotenv()
+    config = load_config("./config.json")
+    nL = NewsListener(key=os.getenv("NEWS_API_KEY"), domains=config["outlets"])
 
-    nL = NewsListener(key=os.getenv("NEWS_API_KEY"))
+    with open("/data/dump_headlines.json", "w") as json_file:
+        json.dump(nL.get_headlines(), json_file, indent=4, ensure_ascii=False)
 
-    with open("./dump.json", "w") as json_file:
-        json.dump(nL.get(), json_file, indent=4)
+    with open("/data/dump_categories.json", "w") as json_file:
+        json.dump(nL.get_keywords(), json_file, indent=4, ensure_ascii=False)

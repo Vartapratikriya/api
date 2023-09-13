@@ -1,46 +1,90 @@
+import os
 import json
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, send_from_directory, request
+from pymongo import MongoClient
 
 
 app = Flask(__name__)
 
+db = MongoClient(
+    f"mongodb+srv://007rajdeepghosh:{os.getenv('MONGO_DB_PASSWORD')}@api.rj03kl4.mongodb.net/?retryWrites=true&w=majority"
+)["api"]
+
 
 @app.route("/")
 def root():
-    return jsonify(
-        {
-            "vartapratikriya": "v0.1.0",
-            "status": "ok",
-        }
+    response = db["status"].find_one({})
+    del response["_id"]
+    return jsonify(response)
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(
+        "public/",
+        "favicon.ico",
+        mimetype="image/vnd.microsoft.icon",
     )
 
 
-@app.route("/articles/top")
-def top():
-    with open("public/data/dump_top.json") as f:
+@app.route("/config")
+def config():
+    with open("public/config.json") as f:
         dump = json.load(f)
     return jsonify(dump)
+
+
+@app.route("/articles/top_keywords")
+def top():
+    response = db["top_keywords"].find(request.args.to_dict(), {"_id": 0})
+    articles = [article for article in response]
+    return jsonify({"articles": articles})
+
+
+@app.route("/articles/sentiment")
+def sentiment():
+    filter_by = request.args["filter_by"]
+    with open("public/config.json") as f:
+        config = json.load(f)
+
+    if filter_by == "language":
+        response = db["headlines"].find({}, {"_id": 0})
+        result = {language: 0.0 for language in config["outlets"].values()}
+        for article in response:
+            sen = article["sentiment"]
+            lang = article["language"]
+            if sen["label"] == "positive":
+                result[lang] += sen["score"]
+            elif sen["label"] == "negative":
+                result[lang] -= sen["score"]
+
+    elif filter_by == "category":
+        response = db["categorised"].find({}, {"_id": 0})
+        result = {category: 0.0 for category in config["categories"]}
+        for article in response:
+            sen = article["sentiment"]
+            category = article["category"]
+            if sen["label"] == "positive":
+                result[category] += sen["score"]
+            elif sen["label"] == "negative":
+                result[category] -= sen["score"]
+
+    return jsonify(result)
 
 
 @app.route("/articles/headlines")
 def headlines():
-    with open("public/data/dump_headlines.json") as f:
-        dump = json.load(f)
-    return jsonify(dump)
+    response = db["headlines"].find(request.args.to_dict(), {"_id": 0})
+    articles = [article for article in response]
+    return jsonify({"articles": articles})
 
 
 @app.route("/articles/categories")
 def categories():
-    args = request.args
-    with open("public/data/dump_categories.json") as f:
-        dump = json.load(f)
-    keyword = args["category"]
-    if keyword == "all":
-        return jsonify(dump)
-    else:
-        dump["articles"] = dump["articles"][keyword.lower()]
-        return jsonify(dump)
+    response = db["categorised"].find(request.args.to_dict(), {"_id": 0})
+    articles = [article for article in response]
+    return jsonify({"articles": articles})
 
 
 if __name__ == "__main__":

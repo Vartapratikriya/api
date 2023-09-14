@@ -2,7 +2,11 @@ import os
 import json
 
 from flask import Flask, jsonify, send_from_directory, request
+from flask_cors import CORS
 from pymongo import MongoClient
+
+app = Flask(__name__)
+cors = CORS(app)
 
 
 app = Flask(__name__)
@@ -85,6 +89,12 @@ def categories():
     response = db["categorised"].find(request.args.to_dict(), {"_id": 0})
     articles = [article for article in response]
     return jsonify({"articles": articles})
+
+
+@app.after_request
+def cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
 
 
 if __name__ == "__main__":

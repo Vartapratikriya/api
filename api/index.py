@@ -1,5 +1,6 @@
 import os
 import json
+import requests
 
 from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
@@ -34,9 +35,11 @@ def favicon():
 
 @app.route("/config")
 def config():
-    with open("public/config.json") as f:
-        dump = json.load(f)
-    return jsonify(dump)
+    return jsonify(
+        requests.get(
+            "https://vartapratikriya.github.io/vartapratikriya-cron-job/src/config.json"
+        ).json()
+    )
 
 
 @app.route("/articles/top_keywords")

@@ -42,7 +42,7 @@ def config():
     )
 
 
-@app.route("/articles/top_keywords")
+@app.route("/articles/topKeywords")
 def top():
     response = db["top_keywords"].find(request.args.to_dict(), {"_id": 0})
     articles = [article for article in response]
@@ -51,31 +51,60 @@ def top():
 
 @app.route("/articles/sentiment")
 def sentiment():
-    filter_by = request.args["filter_by"]
-    with open("public/config.json") as f:
-        config = json.load(f)
+    filter_by = request.args["filterBy"]
+    config = requests.get(
+        "https://vartapratikriya.github.io/vartapratikriya-cron-job/src/config.json"
+    ).json()
 
     if filter_by == "language":
         response = db["headlines"].find({}, {"_id": 0})
-        result = {language: 0.0 for language in config["outlets"].values()}
+        result = {language: 0.0 for language in config["outlets"].keys()}
         for article in response:
-            sen = article["sentiment"]
             lang = article["language"]
-            if sen["label"] == "positive":
-                result[lang] += sen["score"]
-            elif sen["label"] == "negative":
-                result[lang] -= sen["score"]
+            if article["sentiment"] == "positive":
+                result[lang] += article["sentiment_conf"]
+            elif article["sentiment"] == "negative":
+                result[lang] -= article["sentiment_conf"]
 
     elif filter_by == "category":
         response = db["categorised"].find({}, {"_id": 0})
         result = {category: 0.0 for category in config["categories"]}
         for article in response:
-            sen = article["sentiment"]
             category = article["category"]
-            if sen["label"] == "positive":
-                result[category] += sen["score"]
-            elif sen["label"] == "negative":
-                result[category] -= sen["score"]
+            if article["sentiment"] == "positive":
+                result[category] += article["sentiment_conf"]
+            elif article["sentiment"] == "negative":
+                result[category] -= article["sentiment_conf"]
+
+    return jsonify(result)
+
+
+@app.route("/articles/fact")
+def fact():
+    filter_by = request.args["filterBy"]
+    config = requests.get(
+        "https://vartapratikriya.github.io/vartapratikriya-cron-job/src/config.json"
+    ).json()
+
+    if filter_by == "language":
+        response = db["headlines"].find({}, {"_id": 0})
+        result = {language: 0.0 for language in config["outlets"].keys()}
+        for article in response:
+            lang = article["language"]
+            if article["fact"] == "TRUE":
+                result[lang] += article["fact_conf"]
+            elif article["fact"] == "FAKE":
+                result[lang] -= article["fact_conf"]
+
+    elif filter_by == "category":
+        response = db["categorised"].find({}, {"_id": 0})
+        result = {category: 0.0 for category in config["categories"]}
+        for article in response:
+            category = article["category"]
+            if article["fact"] == "TRUE":
+                result[category] += article["fact_conf"]
+            elif article["fact"] == "FAKE":
+                result[category] -= article["fact_conf"]
 
     return jsonify(result)
 

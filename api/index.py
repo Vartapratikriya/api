@@ -9,7 +9,6 @@ from pymongo import MongoClient
 app = Flask(__name__)
 cors = CORS(app)
 
-
 app = Flask(__name__)
 
 db = MongoClient(
@@ -46,7 +45,7 @@ def config():
 def top():
     response = db["top_keywords"].find(request.args.to_dict(), {"_id": 0})
     articles = [article for article in response]
-    return jsonify({"articles": articles})
+    return jsonify(articles)
 
 
 @app.route("/articles/sentiment")

@@ -6,12 +6,15 @@
   - Returns the status of the application.
 - `/config`
   - Returns the configuration of the application.
-- `/articles/top_keywords`
+- `/articles/topKeywords`
   - Returns a list of articles, each with a list of its top keywords.
   - The `filter` query parameter can be used to filter the results by language or category.
 - `/articles/sentiment`
   - Returns a dictionary of sentiment scores for each language or category.
-  - The `filter_by` query parameter must be set to `language` or `category`.
+  - The `filterBy` query parameter must be set to `language` or `category`.
+- `/articles/fact`
+  - Returns a dictionary of fact scores for each language or category.
+  - The `filterBy` query parameter must be set to `language` or `category`.
 - `/articles/headlines`
   - Returns a list of articles, each with its headline.
   - The `filter` query parameter can be used to filter the results by language or category.

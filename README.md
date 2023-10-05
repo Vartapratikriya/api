@@ -1,110 +1,77 @@
-# Vartapratikriya API
-
-This API provides access to a live scraped set of articles and insights about them.
+# Vartapratikriya-API
 
 ## Endpoints
 
-The API has the following endpoints:
-
 - `/`
-  - This endpoint returns the version of the API and the status of the server.
-- `/articles/top`
-  - This endpoint returns the top keywords from the last scraped articles.
+  - Returns the status of the application.
+- `/config`
+  - Returns the configuration of the application.
+- `/articles/topKeywords`
+  - Returns a list of articles, each with a list of its top keywords.
+  - The `filter` query parameter can be used to filter the results by language or category.
+- `/articles/sentiment`
+  - Returns a dictionary of sentiment scores for each language or category.
+  - The `filterBy` query parameter must be set to `language` or `category`.
+- `/articles/fact`
+  - Returns a dictionary of fact scores for each language or category.
+  - The `filterBy` query parameter must be set to `language` or `category`.
 - `/articles/headlines`
-  - This endpoint returns the latest scraped top headlines.
+  - Returns a list of articles, each with its headline.
+  - The `filter` query parameter can be used to filter the results by language or category.
+  - Available filter options are `language`, `category`, & `publishedAt`
 - `/articles/categories`
-  - This endpoint returns the articles in the specified category. The category can be specified by the `category` query parameter.
+  - Returns a list of articles, each with its category.
+  - The `filter` query parameter can be used to filter the results by language or category.
+  - Available filter options are `language`, `category`, & `publishedAt`
 
-## Example Requests & response
+## Queries
 
-The following are examples of requests that you can make to the API:
+The following queries can be used to filter the results of the API endpoints:
 
-- To get the version of the API, you can make a GET request to the `/` endpoint.
+- `filter`: This query parameter can be used to filter the results by language or category. The value of this parameter must be one of the following:
+  - `language`: This filter will return articles in the specified language.
+  - `category`: This filter will return articles in the specified category.
 
-#### Request:
+## Examples
 
-```
-GET https://vartapratikriya-api.vercel.app/
-```
+The following examples show how to use the API endpoints:
 
-#### Response:
+- To get the status of the application, you can use the following request:
 
-```
-{
-  "status": "ok",
-  "vartapratikriya": "v0.1.0"
-}
-```
-
-- To get the top articles, you can make a GET request to the `/articles/top` endpoint.
-
-#### Request:
-
-```
-GET https://vartapratikriya-api.vercel.app/articles/top
-```
-
-#### Response:
-
-```
-{
-  "generated_at": "2023-09-12 04:22:14.962075",
-  "insights": "v0.1.0",
-  "keywords": [
-    [
-      "India",
-      41
-    ],
-   ...
-  ]
-}
+GET /
 
 ```
 
-- To get the headlines of the articles, you can make a GET request to the `/articles/headlines` endpoint.
-
-#### Request:
+* To get the configuration of the application, you can use the following request:
 
 ```
-GET https://vartapratikriya-api.vercel.app/articles/headlines
-```
 
-#### Response:
+GET /config
 
-```
-{
-   "news_listener": "v0.1.0",
-   "generated_at": "2023-09-12 04:59:08.253620",
-   "articles": [...]
-}
-```
+- To get a list of articles, each with a list of its top keywords, you can use the following request:
 
-#### Request:
-
-- To get the articles in the specified category, you can make a GET request to the `/articles/categories` endpoint and specify the category in the `category` query parameter. Available categories: [
-  "sports",
-  "healthcare",
-  "business",
-  "media",
-  "laws",
-  "entertainment",
-  "weather",
-  "policy",
-  ]
+GET /articles/top_keywords
 
 ```
-GET https://vartapratikriya-api.vercel.app/articles/categories?category=business
-```
 
-#### Response:
+* To get a dictionary of sentiment scores for each language, you can use the following request:
 
 ```
-{
-    "news_listener": "v0.1.0",
-    "scraped_at": "2023-09-12 04:59:14.259942",
-    "articles": {
-        "sports": [..],
-        ...
-    }
-}
+
+GET /articles/sentiment?filter_by=\<parameter\>
+
 ```
+
+* To get a list of top headlines, you can use the following request:
+
+```
+
+GET /articles/headlines
+
+```
+
+* To get a list of articles from a specific category, you can use the following request:
+
+```
+
+GET /articles/categories?category=\<category\>
